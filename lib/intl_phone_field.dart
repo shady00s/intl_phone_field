@@ -11,6 +11,8 @@ import './countries.dart';
 import './phone_number.dart';
 
 class IntlPhoneField extends StatefulWidget {
+  // accepts the custom validation alongside with the default length checker
+  final bool? acceptCustomValidation;
   /// The TextFormField key.
   final GlobalKey<FormFieldState>? formFieldKey;
 
@@ -251,6 +253,7 @@ class IntlPhoneField extends StatefulWidget {
 
   const IntlPhoneField({
     Key? key,
+    this.acceptCustomValidation,
     this.formFieldKey,
     this.initialCountryCode,
     this.languageCode = 'en',
@@ -427,7 +430,7 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
-        if (value == null || !isNumeric(value)) return validatorMessage;
+        if (value == null || !isNumeric(value) || (widget.acceptCustomValidation == true )) return validatorMessage;
         if (!widget.disableLengthCheck) {
           return value.length >= _selectedCountry.minLength && value.length <= _selectedCountry.maxLength
               ? null
