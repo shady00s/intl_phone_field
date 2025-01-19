@@ -13,6 +13,7 @@ import './phone_number.dart';
 class IntlPhoneField extends StatefulWidget {
   // accepts the custom validation alongside with the default length checker
   final bool? acceptCustomValidation;
+
   /// The TextFormField key.
   final GlobalKey<FormFieldState>? formFieldKey;
 
@@ -430,14 +431,49 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
-        if (value == null || !isNumeric(value) || (widget.acceptCustomValidation == true )) return validatorMessage;
-        if (!widget.disableLengthCheck) {
-          return value.length >= _selectedCountry.minLength && value.length <= _selectedCountry.maxLength
-              ? null
-              : widget.invalidNumberMessage;
+        if (value == null || !isNumeric(value)) {
+          return widget.invalidNumberMessage ?? 'Invalid Mobile Number';
         }
 
-        return validatorMessage;
+        String? lengthValidationMessage;
+        if (!widget.disableLengthCheck) {
+          final isLengthValid =
+              value.length >= _selectedCountry.minLength && value.length <= _selectedCountry.maxLength;
+          if (!isLengthValid) {
+            lengthValidationMessage = widget.invalidNumberMessage ?? 'Invalid Mobile Number';
+          }
+        }
+
+        String? customValidationMessage;
+        if (widget.acceptCustomValidation == true && widget.validator != null) {
+          final phoneNumber = PhoneNumber(
+            countryISOCode: _selectedCountry.code,
+            countryCode: '+${_selectedCountry.fullCountryCode}',
+            number: value,
+          );
+
+          final FutureOr<String?> customValidatorResult = widget.validator?.call(phoneNumber);
+
+          // Get the validator result
+          if (customValidatorResult is String) {
+            customValidationMessage = customValidatorResult;
+          } else if (customValidatorResult is Future<String?>) {
+
+            customValidatorResult.then((msg) {
+              if (customValidatorResult is String) {
+                customValidationMessage = msg;
+              }
+            });
+          }
+        }
+
+        // Combine custom validation and length validation if acceptCustomValidation is true
+        if (widget.acceptCustomValidation == true) {
+          return customValidationMessage ?? lengthValidationMessage;
+        }
+
+        // Otherwise, only return the length validation message
+        return lengthValidationMessage;
       },
       maxLength: widget.disableLengthCheck ? null : _selectedCountry.maxLength,
       keyboardType: widget.keyboardType,
