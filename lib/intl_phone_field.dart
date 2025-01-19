@@ -431,10 +431,12 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
+        // Check if the value is null or non-numeric
         if (value == null || !isNumeric(value)) {
           return widget.invalidNumberMessage ?? 'Invalid Mobile Number';
         }
 
+        // Validate length
         String? lengthValidationMessage;
         if (!widget.disableLengthCheck) {
           final isLengthValid =
@@ -444,8 +446,9 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
           }
         }
 
+        // Run the custom validator, if provided
         String? customValidationMessage;
-        if (widget.acceptCustomValidation == true && widget.validator != null) {
+        if (widget.validator != null) {
           final phoneNumber = PhoneNumber(
             countryISOCode: _selectedCountry.code,
             countryCode: '+${_selectedCountry.fullCountryCode}',
@@ -454,26 +457,25 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
 
           final FutureOr<String?> customValidatorResult = widget.validator?.call(phoneNumber);
 
-          // Get the validator result
+          // Handle synchronous and asynchronous validation results
           if (customValidatorResult is String) {
             customValidationMessage = customValidatorResult;
           } else if (customValidatorResult is Future<String?>) {
-
             customValidatorResult.then((msg) {
-              if (customValidatorResult is String) {
+              if (msg != null) {
                 customValidationMessage = msg;
               }
             });
           }
         }
 
-        // Combine custom validation and length validation if acceptCustomValidation is true
-        if (widget.acceptCustomValidation == true) {
-          return customValidationMessage ?? lengthValidationMessage;
+        // Combine both validation messages
+        if (lengthValidationMessage != null && customValidationMessage != null) {
+          return '$lengthValidationMessage\n$customValidationMessage';
         }
 
-        // Otherwise, only return the length validation message
-        return lengthValidationMessage;
+        // Return one of the validation messages, prioritizing the custom validator
+        return customValidationMessage ?? lengthValidationMessage;
       },
       maxLength: widget.disableLengthCheck ? null : _selectedCountry.maxLength,
       keyboardType: widget.keyboardType,
