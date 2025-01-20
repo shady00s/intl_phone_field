@@ -386,6 +386,7 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      textDirection: TextDirection.rtl,
       key: widget.formFieldKey,
       initialValue: (widget.controller == null) ? number : null,
       autofillHints: widget.disableAutoFillHints ? null : [AutofillHints.telephoneNumberNational],
@@ -404,7 +405,7 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
       onFieldSubmitted: widget.onSubmitted,
       magnifierConfiguration: widget.magnifierConfiguration,
       decoration: widget.decoration.copyWith(
-        prefixIcon: _buildFlagsButton(),
+        suffixIcon: _buildFlagsButton(),
         counterText: !widget.enabled ? '' : null,
       ),
       style: widget.style,
