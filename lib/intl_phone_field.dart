@@ -252,9 +252,12 @@ class IntlPhoneField extends StatefulWidget {
   /// If null, default magnification configuration will be used.
   final TextMagnifierConfiguration? magnifierConfiguration;
 
+  final TextDirection? textDirection;
+
   const IntlPhoneField({
     Key? key,
     this.acceptCustomValidation,
+    this.textDirection,
     this.formFieldKey,
     this.initialCountryCode,
     this.languageCode = 'en',
@@ -386,7 +389,7 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      textDirection: TextDirection.rtl,
+      textDirection: widget.textDirection,
       key: widget.formFieldKey,
       initialValue: (widget.controller == null) ? number : null,
       autofillHints: widget.disableAutoFillHints ? null : [AutofillHints.telephoneNumberNational],
@@ -405,7 +408,8 @@ class _IntlPhoneFieldState extends State<IntlPhoneField> {
       onFieldSubmitted: widget.onSubmitted,
       magnifierConfiguration: widget.magnifierConfiguration,
       decoration: widget.decoration.copyWith(
-        suffixIcon: _buildFlagsButton(),
+        suffixIcon: widget.textDirection == TextDirection.ltr ? _buildFlagsButton() : null,
+        prefixIcon: widget.textDirection != TextDirection.ltr ?  _buildFlagsButton(): null,
         counterText: !widget.enabled ? '' : null,
       ),
       style: widget.style,
